@@ -6,7 +6,7 @@ const apiUrl = "https://dummy-apis.netlify.app/api/contact-suggestions?count=";
 let arrPersons = []; //Leeres Array für Personen aus Api
 let contactList = document.querySelector(".contact-list");
 let invitations = document.querySelector("#invitations");
-let pendingCount = 0;
+let pendingCount = JSON.parse(localStorage.getItem("pendingInvitations"));
 
 // Kontakte holen und anzeigen *************************************
 getAndShow(8);
@@ -45,15 +45,17 @@ function showApiPerson() {
       <h2>${person.name.title} ${person.name.first} ${person.name.last}</h2>
       <p>${person.title}</p>
       <p>${showMutualConnections(person.mutualConnections)}</p>
-      <button class="connect-button" id="${i}">Connect</button>
+      <button class="connect-button" id="${i}">${pending(
+      person.isPending
+    )}</button>
     </li>
     `;
   }
   contactList.insertAdjacentHTML("afterbegin", output);
   addConnectEvent();
   addRemoveEvent();
+  invitationsText();
 }
-
 // *****************************************************************
 
 function showMutualConnections(mutualConnections) {
@@ -63,7 +65,6 @@ function showMutualConnections(mutualConnections) {
     return `${mutualConnections} Mutual Connections`;
   }
 }
-
 // *****************************************************************
 
 function onConnecting(event) {
@@ -77,13 +78,27 @@ function onConnecting(event) {
     pendingCount--;
     event.target.innerText = "Connect";
   }
+  invitationsText();
+}
+//*******************************************************************
 
+function invitationsText() {
   if (pendingCount === 1) {
     invitations.innerText = pendingCount + " pending invitation";
   } else if (pendingCount > 1) {
     invitations.innerText = pendingCount + " pending invitations";
   } else {
     invitations.innerText = "No pending invitations";
+  }
+  localStorage.setItem("pendingInvitations", JSON.stringify(pendingCount));
+}
+//******************************************************************
+
+function pending(isPending) {
+  if (isPending === true) {
+    return "Pending";
+  } else {
+    return "Connect";
   }
 }
 // *****************************************************************
@@ -102,7 +117,6 @@ function addRemoveEvent() {
     removeButton.addEventListener("click", onRemoving);
   }
 }
-
 // *****************************************************************
 
 function onRemoving(event) {
